@@ -5,6 +5,7 @@
   "version": "0.5.0",
   "publisher": "paper-my-code",
   "license": "GPL-3.0-or-later",
+  "icon": "images/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/Schmiddyyy/paper-my-code"
