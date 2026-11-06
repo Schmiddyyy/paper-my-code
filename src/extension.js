@@ -3,58 +3,23 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vscode = require('vscode');
 const patcher = require('./patcher');
-const {loadTiles, bake, bakeSingle} = require('./paper');
+const {loadTiles, bake} = require('./paper');
 const {writeThemes} = require('./theme');
 
 const WANTED = 'paperMyCode.wanted';
 const PRINT_FONTS = "'IBM Plex Mono', 'Courier Prime', 'iA Writer Mono S', monospace";
 // Settings the colour themes are made from; the others are for the overlay.
 const THEME_KEYS = ['printColors', 'matte', 'brightness'];
-const BACKGROUND_EXTENSION = 'shalldie.background';
+// Strengths renamed in 0.5.0, old name to new.
+const RENAMED = {
+    mottle: 'mottle.strength',
+    printColors: 'printColors.strength',
+    matte: 'matte.strength',
+    brightness: 'brightness.level',
+    inkSpread: 'inkSpread.strength',
+    lightScatter: 'lightScatter.strength',
+};
 let pending;
-
-/**
- * Hands the paper to the "background" extension: one seamless image with the
- * texture, highlights and mottle, set as its fullscreen image, repeated
- * instead of stretched. Paper my Code's own texture and mottle are switched
- * off so the two don't draw twice; its themes and ink filter stay.
- */
-async function useBackgroundExtension(context) {
-    // Its own mottle switch is turned off below; the strength still counts.
-    const cfg = {...config(), mottle: vscode.workspace.getConfiguration('paperMyCode').get('mottle')};
-    const tiles = await vscode.window.withProgress({
-        location: vscode.ProgressLocation.Notification,
-        title: `Paper my Code: making ${cfg.paper} paper for the background extension`,
-    }, async () => {
-        const t = await loadTiles(context.globalStorageUri.fsPath, cfg.paper, cfg.resolution);
-        return bakeSingle(t, cfg);
-    });
-    const dir = path.join(context.globalStorageUri.fsPath, 'background');
-    fs.rmSync(dir, {recursive: true, force: true});
-    fs.mkdirSync(dir, {recursive: true});
-    // A new name each time, so the background extension sees a change.
-    const file = path.join(dir, `paper-${cfg.paper}-${Date.now().toString(36)}.png`);
-    fs.writeFileSync(file, tiles.png);
-
-    const px = `${tiles.size / cfg.resolution * cfg.scale}px`;
-    await vscode.workspace.getConfiguration('background').update('fullscreen', {
-        images: [file],
-        opacity: tiles.opacity,
-        size: `${px} ${px}`,
-        position: `${cfg.shift[0]}px ${cfg.shift[1]}px`,
-        // Repeat the tile; normal blending on dark themes too, so the paper's
-        // shadows and highlights both show, as in Paper my Shell.
-        styles: [{'background-repeat': 'repeat', 'mix-blend-mode': 'normal', 'transition': 'none'}],
-        interval: 0,
-        random: false,
-    }, vscode.ConfigurationTarget.Global);
-    const mine = vscode.workspace.getConfiguration('paperMyCode');
-    await mine.update('texture.enabled', false, vscode.ConfigurationTarget.Global);
-    await mine.update('mottle.enabled', false, vscode.ConfigurationTarget.Global);
-    vscode.window.showInformationMessage(
-        'The paper is set as the background extension\'s fullscreen image. Reload when it asks you to. ' +
-        'Run this command again after changing the paper or its strength.');
-}
 
 async function activate(context) {
     const appRoot = vscode.env.appRoot;
@@ -96,20 +61,18 @@ async function activate(context) {
             patcher.remove(appRoot);
             await context.globalState.update(WANTED, false);
         }, 'Paper is off.')),
-        vscode.commands.registerCommand('paperMyCode.useBackgroundExtension', async () => {
-            if (!vscode.extensions.getExtension(BACKGROUND_EXTENSION)) {
-                const choice = await vscode.window.showInformationMessage(
-                    'This needs the "background" extension by shalldie. Install it first, then run this again.',
-                    'Show Extension');
-                if (choice)
-                    vscode.commands.executeCommand('workbench.extensions.search', BACKGROUND_EXTENSION);
-                return;
-            }
-            try {
-                await useBackgroundExtension(context);
-            } catch (e) {
-                showError(e);
-            }
+        // Ink spread and light scattering are one SVG filter on the editor's
+        // text, so they go on and off together. Off if either is on.
+        vscode.commands.registerCommand('paperMyCode.toggleInk', async () => {
+            const mine = vscode.workspace.getConfiguration('paperMyCode');
+            const keys = ['inkSpread.enabled', 'lightScatter.enabled'];
+            const on = !keys.some(key => mine.get(key));
+            for (const key of keys)
+                await mine.update(key, on, vscode.ConfigurationTarget.Global);
+            // When the paper is on, the settings change renders it and asks to reload.
+            if (!context.globalState.get(WANTED))
+                vscode.window.showInformationMessage(
+                    `Ink effects ${on ? 'on' : 'off'}. They show once the paper is on: run Turn On Paper.`);
         }),
         vscode.commands.registerCommand('paperMyCode.useFont', async () => {
             const editor = vscode.workspace.getConfiguration('editor');
@@ -135,6 +98,12 @@ async function activate(context) {
         {dispose: () => clearTimeout(pending)},
     );
 
+    // Before 0.5.0 the strengths clashed with their switches; move them.
+    await migrateStrengths();
+
+    // Up to 0.3.0 the paper could be handed to the "background" extension.
+    leaveBackgroundExtension(context).catch(showError);
+
     // After an extension update the themes are back at the defaults.
     if (themes())
         run(async () => {}, 'Paper themes updated to your settings.');
@@ -151,6 +120,66 @@ async function activate(context) {
     }
 }
 
+/**
+ * Version 0.3.0 could write the paper as one image for the "background"
+ * extension (shalldie.background), and switched its own texture and mottle off
+ * for that. The paper is now always drawn by Paper my Code itself: this takes
+ * the image out of that extension's settings, deletes it, and offers to switch
+ * the built-in paper back on.
+ */
+async function leaveBackgroundExtension(context) {
+    const dir = path.join(context.globalStorageUri.fsPath, 'background');
+    if (!fs.existsSync(dir))
+        return;
+    try {
+        const bg = vscode.workspace.getConfiguration('background');
+        const fullscreen = bg.inspect('fullscreen')?.globalValue;
+        if (fullscreen?.images?.some(image => image.startsWith(dir)))
+            await bg.update('fullscreen', undefined, vscode.ConfigurationTarget.Global);
+    } catch {
+        // The background extension is uninstalled, so its settings no longer apply.
+    }
+    fs.rmSync(dir, {recursive: true, force: true});
+
+    const choice = await vscode.window.showInformationMessage(
+        'Paper my Code now draws the paper itself and no longer uses the background extension. ' +
+        'Turn the built-in paper on?', 'Turn On Paper');
+    if (!choice)
+        return;
+    const mine = vscode.workspace.getConfiguration('paperMyCode');
+    const off = ['texture.enabled', 'mottle.enabled'].filter(key => !mine.get(key));
+    if (!off.length)
+        return vscode.commands.executeCommand('paperMyCode.enable');
+    // Wanted first: the settings change below then renders the paper.
+    await context.globalState.update(WANTED, true);
+    for (const key of off)
+        await mine.update(key, true, vscode.ConfigurationTarget.Global);
+}
+
+/**
+ * Before 0.5.0 a strength and its switch shared a name, as in
+ * `paperMyCode.inkSpread` (a number) and `paperMyCode.inkSpread.enabled`.
+ * VSCodium keeps settings as a tree, so once the number was set, the switch
+ * under it was dropped, read as off, and the effect disappeared. This moves
+ * the numbers to their new names; the switches then read correctly again.
+ */
+async function migrateStrengths() {
+    const c = vscode.workspace.getConfiguration('paperMyCode');
+    const targets = [
+        ['globalValue', vscode.ConfigurationTarget.Global],
+        ['workspaceValue', vscode.ConfigurationTarget.Workspace],
+    ];
+    for (const [old, renamed] of Object.entries(RENAMED)) {
+        const values = c.inspect(old) ?? {};
+        for (const [field, target] of targets) {
+            if (typeof values[field] !== 'number')
+                continue;
+            await c.update(renamed, values[field], target);
+            await c.update(old, undefined, target);
+        }
+    }
+}
+
 function config() {
     const c = vscode.workspace.getConfiguration('paperMyCode');
     const v = (key, on) => (c.get(on) ? c.get(key) : 0);
@@ -160,12 +189,12 @@ function config() {
         intensity: c.get('texture.intensity'),
         darkBalance: c.get('texture.darkBalance'),
         grain: c.get('texture.grain'),
-        mottle: v('mottle', 'mottle.enabled'),
-        printColors: v('printColors', 'printColors.enabled'),
-        matte: v('matte', 'matte.enabled'),
-        brightness: c.get('brightness.enabled') ? c.get('brightness') : 1,
-        inkSpread: v('inkSpread', 'inkSpread.enabled'),
-        lightScatter: v('lightScatter', 'lightScatter.enabled'),
+        mottle: v('mottle.strength', 'mottle.enabled'),
+        printColors: v('printColors.strength', 'printColors.enabled'),
+        matte: v('matte.strength', 'matte.enabled'),
+        brightness: c.get('brightness.enabled') ? c.get('brightness.level') : 1,
+        inkSpread: v('inkSpread.strength', 'inkSpread.enabled'),
+        lightScatter: v('lightScatter.strength', 'lightScatter.enabled'),
         scale: c.get('scale'),
         resolution: c.get('resolution') === '2x' ? 2 : 1,
         scope: c.get('scope'),

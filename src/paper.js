@@ -146,71 +146,6 @@ ${hidden}::before, ${hidden}::after { display: none; }
     return {files, body: filter?.svg ?? ''};
 }
 
-/**
- * The whole paper as one seamless image, for the "background" extension
- * (shalldie.background), which draws a single image with one opacity.
- *
- * It has to repeat as a whole, so it is 2048 px: the detail tile 2x2, grain
- * 8x8, mottle (tone stretched 2x) 2x2, and the tone tile stretched 4x instead
- * of 8x, so its cloudy variation is half the size and repeats every 2048 px
- * instead of 4096. Shadows (black) and highlights + mottle (white) are
- * composited into one grey + alpha pixel, which is exact for normal alpha
- * blending; the image's opacity carries the overall strength, so the alpha
- * keeps its full 8-bit range.
- */
-function bakeSingle(tiles, cfg) {
-    const SIZE = 2048;
-    const {intensity, darkBalance, grain, mottle} = cfg;
-    const split = tile => {
-        const n = tile.size * tile.size;
-        const light = new Float32Array(n), shadow = new Float32Array(n);
-        for (let i = 0; i < n; i++) {
-            const a = tile.pixels[i * 4 + 3] / 255;
-            light[i] = tile.pixels[i * 4] / 255 * a;
-            shadow[i] = a - light[i];
-        }
-        return {size: tile.size, light, shadow, alpha: tile.pixels};
-    };
-    const detail = split(tiles.detail), tone = split(tiles.tone), fine = split(tiles.grain);
-    // Bilinear, wrapping.
-    const sample = (t, field, x, y) => {
-        const n = t.size;
-        const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
-        const at = (i, j) => field(((j % n + n) % n) * n + ((i % n + n) % n));
-        return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) +
-            (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
-    };
-    const ratio = detail.size / 1024; // texels per pixel (2 for a 2x texture)
-    const total = new Float32Array(SIZE * SIZE), white = new Float32Array(SIZE * SIZE);
-    let max = 0;
-    for (let y = 0; y < SIZE; y++) {
-        for (let x = 0; x < SIZE; x++) {
-            const i = y * SIZE + x;
-            const d = (Math.floor(y * ratio) % detail.size) * detail.size + Math.floor(x * ratio) % detail.size;
-            const g = (y % fine.size) * fine.size + x % fine.size;
-            const tx = x / 4 - 0.5, ty = y / 4 - 0.5;
-            const tl = sample(tone, k => tone.light[k], tx, ty);
-            const ts = sample(tone, k => tone.shadow[k], tx, ty);
-            const shadow = 1 - (1 - detail.shadow[d]) * (1 - ts) * (1 - grain * fine.shadow[g]);
-            const light = 1 - (1 - detail.light[d]) * (1 - tl) * (1 - grain * fine.light[g]);
-            const mx = x / 2 - 0.5, my = y / 2 - 0.5;
-            const cloud = Math.max(0.5 - MOTTLE_FLOOR + sample(tone, k => tone.light[k], mx, my) -
-                0.5 * sample(tone, k => tone.alpha[k * 4 + 3] / 255, mx, my), 0);
-            const black = intensity * shadow;
-            white[i] = 1 - (1 - intensity * darkBalance * light) * (1 - mottle * cloud);
-            total[i] = 1 - (1 - black) * (1 - white[i]);
-            max = Math.max(max, total[i]);
-        }
-    }
-    const opacity = Math.min(0.6, max); // the extension allows up to 0.6
-    const pixels = Buffer.alloc(SIZE * SIZE * 2);
-    for (let i = 0; i < total.length; i++) {
-        pixels[i * 2] = total[i] > 0 ? Math.round(255 * white[i] / total[i]) : 0;
-        pixels[i * 2 + 1] = Math.round(255 * Math.min(1, total[i] / opacity));
-    }
-    return {png: encodePngGA(SIZE, pixels), opacity: Number(opacity.toFixed(4)), size: SIZE};
-}
-
 // --- PNG, grey + alpha, 8 bit -------------------------------------------
 
 const CRC_TABLE = Int32Array.from({length: 256}, (_, n) => {
@@ -265,4 +200,4 @@ function encodePngGA(size, pixels) {
     ]);
 }
 
-module.exports = {loadTiles, bake, bakeSingle};
+module.exports = {loadTiles, bake};

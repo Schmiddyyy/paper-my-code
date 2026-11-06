@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+- **Fix**: ink spread, light scattering, mottle, print colours, matte and brightness could switch themselves off once their strength was changed, because each strength shared its name with its switch. The strengths are now `….strength` (`brightness.level`), and existing values move over on start.
+- **Toggle Ink Spread and Light Scattering**: turns both effects on the editor's text on or off in one command.
+- The paper is drawn only by Paper my Code itself. **Use Paper in the Background Extension** and `tools/make-backgrounds.js` are removed, so shalldie's background extension is no longer used.
+- If you used that command, Paper my Code removes its image from `background.fullscreen` and offers to turn the built-in paper back on.
+
 ## 0.3.0
 - **Use Paper in the Background Extension**: renders the chosen paper as one seamless image and sets it up in shalldie's background extension.
 - `tools/make-backgrounds.js` writes all seven papers as background images.

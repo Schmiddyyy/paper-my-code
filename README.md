@@ -28,7 +28,7 @@ A port of [Paper my Shell](https://github.com/coffeebowl/paper-my-shell) by coff
 - **Ink spread** on the editor's text: strokes grow ragged where the paper takes ink.
 - **Light scattering**: dark strokes get a faint halo, and light gaps between them darken a little.
 - **Window or editor only**, 1x/2x resolution, adjustable scale for true size, and the texture hides when VSCodium is fullscreen.
-- **Works with [background](https://github.com/shalldie/vscode-background)** by shalldie: hand the paper to that extension instead, in one command.
+- **Self-contained**: the paper is drawn by this extension alone. No other extension is needed.
 
 ## Install
 
@@ -39,29 +39,15 @@ A port of [Paper my Shell](https://github.com/coffeebowl/paper-my-shell) by coff
    ```
 3. Pick the theme: `Ctrl+K` `Ctrl+T` → **Paper** or **Paper Night**.
 
-That's the theme. For the paper texture, choose one of the two ways below.
+That's the theme.
 
-### Paper texture, built in
+### Paper texture
 
 Run **Paper my Code: Turn On Paper** from the command palette and reload the window. The first time, each paper takes a few seconds to generate; it's cached after that. **Turn Off Paper** removes it again.
 
-### Paper texture with the background extension
+### Ink effects
 
-If you use shalldie's [background](https://github.com/shalldie/vscode-background) extension, install it, then run **Paper my Code: Use Paper in the Background Extension**. It renders your paper into one seamless image and fills in `background.fullscreen`. It also switches off Paper my Code's own texture so the paper isn't drawn twice.
-
-Without Paper my Code, take the images from the release's `paper-backgrounds.zip` and set them up by hand:
-
-```jsonc
-"background.fullscreen": {
-  "images": ["~/Pictures/paper/paper-drawing.png"],
-  "opacity": 0.0679,           // per paper, see the zip's README; raise for a stronger paper
-  "size": "2048px 2048px",
-  "position": "0 0",
-  "styles": [{ "background-repeat": "repeat", "mix-blend-mode": "normal", "transition": "none" }]
-}
-```
-
-The `styles` line is needed. Without it, the paper is stretched instead of repeated, and on dark themes its shadows disappear.
+**Paper my Code: Toggle Ink Spread and Light Scattering** turns both effects on the editor's text on or off together. If either one is on, it turns both off. When the paper is on, reload the window when it asks you to.
 
 ### Print font
 
@@ -82,29 +68,29 @@ All under *Settings → Paper my Code*. Defaults are Paper my Shell's.
 | `paperMyCode.texture.intensity` | `0.05` | Strength of the relief, subtle on purpose |
 | `paperMyCode.texture.darkBalance` | `0.4` | Strength on dark surfaces relative to light ones |
 | `paperMyCode.texture.grain` | `0.5` | Pixel-fine fibres and grain |
-| `paperMyCode.mottle` | `0.04` | Ink mottle |
-| `paperMyCode.printColors` | `1` | How far colours move into the print gamut |
-| `paperMyCode.matte` | `0.2` | Black lift; `1` is the black of uncoated paper |
-| `paperMyCode.brightness` | `0.9`, off | Dims the themes |
-| `paperMyCode.inkSpread` | `0.4` | Ink spread on the editor's text |
-| `paperMyCode.lightScatter` | `0.6` | Light scattering on the editor's text |
+| `paperMyCode.mottle.strength` | `0.04` | Ink mottle |
+| `paperMyCode.printColors.strength` | `1` | How far colours move into the print gamut |
+| `paperMyCode.matte.strength` | `0.2` | Black lift; `1` is the black of uncoated paper |
+| `paperMyCode.brightness.level` | `0.9`, off | Dims the themes |
+| `paperMyCode.inkSpread.strength` | `0.4` | Ink spread on the editor's text |
+| `paperMyCode.lightScatter.strength` | `0.6` | Light scattering on the editor's text |
 | `paperMyCode.scope` | `window` | `window` or `editor` |
 | `paperMyCode.resolution` | `1x` | `2x` for HiDPI displays |
 | `paperMyCode.scale` | `1` | Feature size; for true size, use dpi ÷ (110 × display scaling) |
 
 Every effect also has an `….enabled` switch.
 
-The texture is meant to be barely noticeable, as in Paper my Shell; you feel it more than see it. If you want it plainly visible, raise `texture.intensity`, or the background extension's `opacity`, to two or three times the default.
+The texture is meant to be barely noticeable, as in Paper my Shell; you feel it more than see it. If you want it plainly visible, raise `texture.intensity` to two or three times the default.
 
 ## Troubleshooting
 
-**"Can't write to VSCodium's install folder" / `EACCES: permission denied`.** The paper (from this extension or from the background extension) is drawn by adding a stylesheet to VSCodium's `workbench.html`, the only way to draw over the workbench. The themes don't need this.
+**"Can't write to VSCodium's install folder" / `EACCES: permission denied`.** The paper is drawn by adding a stylesheet to VSCodium's `workbench.html`, the only way to draw over the workbench. The themes don't need this.
 
 - **System-wide .deb/.rpm installs** (`/usr/share/codium`) belong to root. Give your user the app folder:
   ```bash
   sudo chown -R "$USER" /usr/share/codium/resources/app
   ```
-  A VSCodium update makes the files root's again, so run this again after updating. Afterwards, both extensions offer to put the paper back.
+  A VSCodium update makes the files root's again, so run this again after updating. Afterwards, Paper my Code offers to put the paper back.
 - **Flatpak, Snap and AppImage installs** are read-only and can't be patched. Use the [tarball](https://github.com/VSCodium/vscodium/releases) in your home folder instead.
 - **Tarball, Windows and macOS installs** work as they are.
 
@@ -129,7 +115,6 @@ Ink spread and light scattering are an SVG filter on the editor's text area. It 
 
 - **Images and webviews:** print colours, matte and brightness apply to the themes' colours, not to images, icons and webviews as in Paper my Shell.
 - **Ink spread** doesn't creep along single fibres as in the shell extension, because an SVG filter can't follow a direction per pixel.
-- **The background extension takes one image,** so for it the paper's large cloudy variation is half Paper my Shell's size.
 - **True size** has to be entered by hand, because VSCodium can't read the monitor's physical size.
 
 ## Development
@@ -138,21 +123,19 @@ Ink spread and light scattering are an SVG filter on the editor's text area. It 
 src/palette.js       the themes' colours before printing
 src/theme.js         print colours, matte, brightness → themes/
 src/print-lut.bin    Paper my Shell's print-lut.png as raw RGB
-src/paper.js         texture cache, layer baking, background image, PNG writer
+src/paper.js         texture cache, layer baking, PNG writer
 src/filters.js       ink spread and light scattering (SVG filter)
 src/patcher.js       workbench.html and its checksum in product.json
 src/worker.mjs       runs the texture generator off the main thread
 src/extension.js     commands and settings
 src/uninstall.js     restores workbench.html after uninstalling
 vendor/papergen.mjs  Paper my Shell's texture generator, unchanged
-tools/make-backgrounds.js  writes the seven background images
 ```
 
 No dependencies. Node 20 or later for the scripts:
 
 ```bash
 npm run themes        # rebuild themes/ and print the contrast report
-npm run backgrounds   # write paper-backgrounds/ for a release
 npm run package       # build the .vsix
 ```
 

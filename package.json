@@ -2,15 +2,15 @@
   "name": "paper-my-code",
   "displayName": "Paper my Code",
   "description": "Light and dark paper themes in print colours, with an optional realistic paper texture, ink spread and light scattering over the editor.",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "publisher": "paper-my-code",
   "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR-USERNAME/paper-my-code"
+    "url": "https://github.com/Schmiddyyy/paper-my-code"
   },
   "bugs": {
-    "url": "https://github.com/YOUR-USERNAME/paper-my-code/issues"
+    "url": "https://github.com/Schmiddyyy/paper-my-code/issues"
   },
   "engines": {
     "vscode": "^1.90.0"
@@ -39,8 +39,7 @@
   "scripts": {
     "themes": "node src/theme.js",
     "package": "npx @vscode/vsce package",
-    "vscode:uninstall": "node ./src/uninstall.js",
-    "backgrounds": "node tools/make-backgrounds.js"
+    "vscode:uninstall": "node ./src/uninstall.js"
   },
   "contributes": {
     "themes": [
@@ -67,8 +66,8 @@
         "category": "Paper my Code"
       },
       {
-        "command": "paperMyCode.useBackgroundExtension",
-        "title": "Use Paper in the Background Extension",
+        "command": "paperMyCode.toggleInk",
+        "title": "Toggle Ink Spread and Light Scattering",
         "category": "Paper my Code"
       },
       {
@@ -142,7 +141,7 @@
             "markdownDescription": "**Ink mottle**: lightens dark areas in soft patches, where ink soaked in unevenly.",
             "order": 5
           },
-          "paperMyCode.mottle": {
+          "paperMyCode.mottle.strength": {
             "type": "number",
             "default": 0.04,
             "minimum": 0,
@@ -162,7 +161,7 @@
             "markdownDescription": "**Print colours**: limits the themes' colours to what offset print on uncoated paper can reach. Blues, violets and bright greens get much calmer, reds and yellows stay strong, greys don't change.",
             "order": 0
           },
-          "paperMyCode.printColors": {
+          "paperMyCode.printColors.strength": {
             "type": "number",
             "default": 1,
             "minimum": 0,
@@ -176,7 +175,7 @@
             "markdownDescription": "**Matte**: the blacks of print instead of a screen. Even the darkest ink reflects some light, so the themes' shadows lift and turn to charcoal at the maximum, while midtones and white stay. White gets a touch warmer.",
             "order": 2
           },
-          "paperMyCode.matte": {
+          "paperMyCode.matte.strength": {
             "type": "number",
             "default": 0.2,
             "minimum": 0,
@@ -190,7 +189,7 @@
             "markdownDescription": "**Brightness**: dims the themes.",
             "order": 4
           },
-          "paperMyCode.brightness": {
+          "paperMyCode.brightness.level": {
             "type": "number",
             "default": 0.9,
             "minimum": 0.3,
@@ -203,7 +202,7 @@
             "markdownDescription": "**Ink spread**: dark strokes in the editor grow a little where the paper takes ink, with ragged edges, like ink on absorbent paper. Takes effect with **Turn On Paper**.",
             "order": 6
           },
-          "paperMyCode.inkSpread": {
+          "paperMyCode.inkSpread.strength": {
             "type": "number",
             "default": 0.4,
             "minimum": 0,
@@ -216,7 +215,7 @@
             "markdownDescription": "**Light scattering**: light entering the paper next to ink scatters under it, so dark strokes in the editor get a faint soft halo and light gaps between them get a little darker. Sized from the scattering length of uncoated paper.",
             "order": 8
           },
-          "paperMyCode.lightScatter": {
+          "paperMyCode.lightScatter.strength": {
             "type": "number",
             "default": 0.6,
             "minimum": 0,
