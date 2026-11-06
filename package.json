@@ -1,0 +1,283 @@
+{
+  "name": "paper-my-code",
+  "displayName": "Paper my Code",
+  "description": "Light and dark paper themes in print colours, with an optional realistic paper texture, ink spread and light scattering over the editor.",
+  "version": "0.3.0",
+  "publisher": "paper-my-code",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR-USERNAME/paper-my-code"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR-USERNAME/paper-my-code/issues"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Themes",
+    "Other"
+  ],
+  "keywords": [
+    "theme",
+    "paper",
+    "print",
+    "light",
+    "dark",
+    "texture",
+    "e-ink",
+    "reading"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "scripts": {
+    "themes": "node src/theme.js",
+    "package": "npx @vscode/vsce package",
+    "vscode:uninstall": "node ./src/uninstall.js",
+    "backgrounds": "node tools/make-backgrounds.js"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "label": "Paper",
+        "uiTheme": "vs",
+        "path": "./themes/paper-color-theme.json"
+      },
+      {
+        "label": "Paper Night",
+        "uiTheme": "vs-dark",
+        "path": "./themes/paper-night-color-theme.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "paperMyCode.enable",
+        "title": "Turn On Paper",
+        "category": "Paper my Code"
+      },
+      {
+        "command": "paperMyCode.disable",
+        "title": "Turn Off Paper",
+        "category": "Paper my Code"
+      },
+      {
+        "command": "paperMyCode.useBackgroundExtension",
+        "title": "Use Paper in the Background Extension",
+        "category": "Paper my Code"
+      },
+      {
+        "command": "paperMyCode.useFont",
+        "title": "Use Print Font",
+        "category": "Paper my Code"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Paper",
+        "order": 0,
+        "properties": {
+          "paperMyCode.paper": {
+            "type": "string",
+            "default": "drawing",
+            "enum": [
+              "recycled",
+              "drawing",
+              "watercolor",
+              "washi",
+              "laid-paper",
+              "cardboard",
+              "canvas"
+            ],
+            "enumDescriptions": [
+              "Recycled / newsprint: flat, fibrous, cloudy.",
+              "Smooth drawing paper: fine grain, some fibres.",
+              "Cold-press watercolour paper: pronounced rounded tooth.",
+              "Japanese kozo paper: long visible fibres in a thin, cloudy sheet.",
+              "Laid writing paper: wire marks about 10 per cm, chain lines every 20-30 mm.",
+              "Grey board: pressed recycled fibre, lumps and uneven pressing.",
+              "Coarse artist canvas: plain weave, about 11 threads per cm."
+            ],
+            "markdownDescription": "The paper, for the texture and ink spread. Each one is generated once (a few seconds) and cached. Takes effect with **Paper my Code: Turn On Paper**.",
+            "order": 0
+          },
+          "paperMyCode.texture.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "**Paper texture**: a shaded relief of tooth, fibres and pulp formation, lit from the upper left. Shadows show on light surfaces, highlights on dark ones.",
+            "order": 1
+          },
+          "paperMyCode.texture.intensity": {
+            "type": "number",
+            "default": 0.05,
+            "minimum": 0,
+            "maximum": 1,
+            "markdownDescription": "Strength of the relief. Subtle on purpose: it changes light areas by only a few levels. Screens with low contrast may need more.",
+            "order": 2
+          },
+          "paperMyCode.texture.darkBalance": {
+            "type": "number",
+            "default": 0.4,
+            "minimum": 0,
+            "maximum": 1,
+            "markdownDescription": "How strong the relief is on dark surfaces, relative to light ones.",
+            "order": 3
+          },
+          "paperMyCode.texture.grain": {
+            "type": "number",
+            "default": 0.5,
+            "minimum": 0,
+            "maximum": 1,
+            "markdownDescription": "Pixel-fine fibres and grain on top, which keep the rounded tooth from looking like leather.",
+            "order": 4
+          },
+          "paperMyCode.mottle.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "**Ink mottle**: lightens dark areas in soft patches, where ink soaked in unevenly.",
+            "order": 5
+          },
+          "paperMyCode.mottle": {
+            "type": "number",
+            "default": 0.04,
+            "minimum": 0,
+            "maximum": 1,
+            "markdownDescription": "Strength of the ink mottle.",
+            "order": 6
+          }
+        }
+      },
+      {
+        "title": "Print",
+        "order": 1,
+        "properties": {
+          "paperMyCode.printColors.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "**Print colours**: limits the themes' colours to what offset print on uncoated paper can reach. Blues, violets and bright greens get much calmer, reds and yellows stay strong, greys don't change.",
+            "order": 0
+          },
+          "paperMyCode.printColors": {
+            "type": "number",
+            "default": 1,
+            "minimum": 0,
+            "maximum": 1,
+            "markdownDescription": "How far colours move into the print gamut.",
+            "order": 1
+          },
+          "paperMyCode.matte.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "**Matte**: the blacks of print instead of a screen. Even the darkest ink reflects some light, so the themes' shadows lift and turn to charcoal at the maximum, while midtones and white stay. White gets a touch warmer.",
+            "order": 2
+          },
+          "paperMyCode.matte": {
+            "type": "number",
+            "default": 0.2,
+            "minimum": 0,
+            "maximum": 1,
+            "markdownDescription": "Strength of the matte look; `1` is the black of uncoated paper.",
+            "order": 3
+          },
+          "paperMyCode.brightness.enabled": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "**Brightness**: dims the themes.",
+            "order": 4
+          },
+          "paperMyCode.brightness": {
+            "type": "number",
+            "default": 0.9,
+            "minimum": 0.3,
+            "maximum": 1,
+            "order": 5
+          },
+          "paperMyCode.inkSpread.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "**Ink spread**: dark strokes in the editor grow a little where the paper takes ink, with ragged edges, like ink on absorbent paper. Takes effect with **Turn On Paper**.",
+            "order": 6
+          },
+          "paperMyCode.inkSpread": {
+            "type": "number",
+            "default": 0.4,
+            "minimum": 0,
+            "maximum": 1,
+            "order": 7
+          },
+          "paperMyCode.lightScatter.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "**Light scattering**: light entering the paper next to ink scatters under it, so dark strokes in the editor get a faint soft halo and light gaps between them get a little darker. Sized from the scattering length of uncoated paper.",
+            "order": 8
+          },
+          "paperMyCode.lightScatter": {
+            "type": "number",
+            "default": 0.6,
+            "minimum": 0,
+            "maximum": 1,
+            "order": 9
+          }
+        }
+      },
+      {
+        "title": "Display",
+        "order": 2,
+        "properties": {
+          "paperMyCode.scope": {
+            "type": "string",
+            "default": "window",
+            "enum": [
+              "window",
+              "editor"
+            ],
+            "enumDescriptions": [
+              "The whole window: editors, sidebars, panels, terminal, menus.",
+              "Only the editor area. Webviews (Markdown preview and the like) stay uncovered."
+            ],
+            "markdownDescription": "Where the paper texture goes. Ink spread and light scattering are always on the editor's text only.",
+            "order": 0
+          },
+          "paperMyCode.resolution": {
+            "type": "string",
+            "default": "1x",
+            "enum": [
+              "1x",
+              "2x"
+            ],
+            "enumDescriptions": [
+              "For displays at 100 % scaling.",
+              "For HiDPI displays (150 % and up): twice the relief detail, grain one device pixel fine."
+            ],
+            "order": 1
+          },
+          "paperMyCode.scale": {
+            "type": "number",
+            "default": 1,
+            "minimum": 0.25,
+            "maximum": 4,
+            "markdownDescription": "**True size**: the textures are made for a pixel of 0.23 mm (110 dpi at 100 % scaling). For true size set this to your screen's dpi ÷ (110 × display scaling), e.g. `1.27` for a 27\" 4K screen at 150 %. Keep laid paper and canvas at whole numbers, as regular patterns shimmer otherwise.",
+            "order": 2
+          },
+          "paperMyCode.hideInFullscreen": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Hide the texture while VSCodium is fullscreen (presenting, screen sharing).",
+            "order": 3
+          },
+          "paperMyCode.shiftTexture": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Start the texture at a random position every time it's applied, so on OLED screens its light and dark spots don't wear in one place.",
+            "order": 4
+          }
+        }
+      }
+    ]
+  }
+}

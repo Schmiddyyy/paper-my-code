@@ -1,0 +1,7 @@
+tools/**
+docs/**
+**/*.map
+state.json
+CHANGELOG.md
+.gitignore
+paper-backgrounds/**
