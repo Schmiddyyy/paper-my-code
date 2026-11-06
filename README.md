@@ -82,22 +82,6 @@ Every effect also has an `….enabled` switch.
 
 The texture is meant to be barely noticeable, as in Paper my Shell; you feel it more than see it. If you want it plainly visible, raise `texture.intensity` to two or three times the default.
 
-## Troubleshooting
-
-**"Can't write to VSCodium's install folder" / `EACCES: permission denied`.** The paper is drawn by adding a stylesheet to VSCodium's `workbench.html`, the only way to draw over the workbench. The themes don't need this.
-
-- **System-wide .deb/.rpm installs** (`/usr/share/codium`) belong to root. Give your user the app folder:
-  ```bash
-  sudo chown -R "$USER" /usr/share/codium/resources/app
-  ```
-  A VSCodium update makes the files root's again, so run this again after updating. Afterwards, Paper my Code offers to put the paper back.
-- **Flatpak, Snap and AppImage installs** are read-only and can't be patched. Use the [tarball](https://github.com/VSCodium/vscodium/releases) in your home folder instead.
-- **Tarball, Windows and macOS installs** work as they are.
-
-**"Installation appears to be corrupt."** Paper my Code keeps the checksum in `product.json` correct, so it doesn't cause this. Other extensions that patch VSCodium can, and the warning is harmless.
-
-**Uninstalling.** **Turn Off Paper** restores `workbench.html` byte for byte. Uninstalling the extension does the same on the next start.
-
 ## How it works
 
 The themes are ordinary colour themes. `src/theme.js` takes the palette in `src/palette.js` and puts every colour through Paper my Shell's print shader steps, in its order: print colour table, matte, paper tint, brightness.
