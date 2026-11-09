@@ -18,6 +18,7 @@ A port of [Paper my Shell](https://github.com/coffeebowl/paper-my-shell) by coff
 - **Matte**: blacks lift towards the charcoal of real ink, and white gets a touch warmer.
 - **Set like code in a book**: bold keywords, italic comments and parameters, semantic highlighting.
 - **Readable**: every text colour passes WCAG AA, and body text is about 14:1 on Paper and 11.5:1 on Paper Night.
+- **Accent colour**: beige, purple, green or blue paper around the editor. It is strongest on the title, activity and status bars and fades inwards through the sidebar, tabs and popups, to a panel and terminal close to paper. The editor stays plain paper.
 - **Adjustable**: brightness, matte and print colours are settings, and the themes are rewritten to match.
 
 **Paper**, drawn over the workbench:
@@ -32,14 +33,33 @@ A port of [Paper my Shell](https://github.com/coffeebowl/paper-my-shell) by coff
 
 ## Install
 
-1. Download `paper-my-code-x.y.z.vsix` from [Releases](../../releases).
-2. In VSCodium, open Extensions → `…` → **Install from VSIX…**, or run:
+**From the extension store** (VSCodium and other editors that use [Open VSX](https://open-vsx.org/extension/schmiddyyy/paper-my-code)):
+
+1. Open Extensions (`Ctrl+Shift+X`), search for **Paper my Code** and click **Install**. Or run:
    ```bash
-   codium --install-extension paper-my-code-x.y.z.vsix
+   codium --install-extension schmiddyyy.paper-my-code
    ```
-3. Pick the theme: `Ctrl+K` `Ctrl+T` → **Paper** or **Paper Night**.
+2. Pick the theme: `Ctrl+K` `Ctrl+T` → **Paper** or **Paper Night**.
+
+Updates then come in automatically.
+
+**From a .vsix** (VS Code, or without the store): download `paper-my-code-x.y.z.vsix` from [Releases](../../releases), then open Extensions → `…` → **Install from VSIX…**, or run `codium --install-extension paper-my-code-x.y.z.vsix`.
 
 That's the theme.
+
+### Accent colour
+
+Set `paperMyCode.accentColor` to `beige`, `purple`, `green` or `blue` (*Settings → Paper my Code → Display → Accent Color*). It colours everything around the editor, strongest at the window's edge:
+
+| Surface | Accent |
+|---|---|
+| Title bar, activity bar, status bar | full |
+| Sidebar, tabs | 60 % |
+| Menus, command palette, popups | 45 % |
+| Panel, terminal | 15 %, nearly paper |
+| Editor | none, plain paper |
+
+The themes are rewritten when it changes; reload the window when it asks you to.
 
 ### Paper texture
 
@@ -65,6 +85,7 @@ All under *Settings → Paper my Code*. Defaults are Paper my Shell's.
 | Setting | Default | |
 |---|---|---|
 | `paperMyCode.paper` | `drawing` | Which paper |
+| `paperMyCode.accentColor` | `beige` | `beige`, `purple`, `green` or `blue` around the editor |
 | `paperMyCode.texture.intensity` | `0.05` | Strength of the relief, subtle on purpose |
 | `paperMyCode.texture.darkBalance` | `0.4` | Strength on dark surfaces relative to light ones |
 | `paperMyCode.texture.grain` | `0.5` | Pixel-fine fibres and grain |
@@ -98,7 +119,6 @@ Ink spread and light scattering are an SVG filter on the editor's text area. It 
 ## Limitations
 
 - **Images and webviews:** print colours, matte and brightness apply to the themes' colours, not to images, icons and webviews as in Paper my Shell.
-- **Ink spread** doesn't creep along single fibres as in the shell extension, because an SVG filter can't follow a direction per pixel.
 - **True size** has to be entered by hand, because VSCodium can't read the monitor's physical size.
 
 ## Development
