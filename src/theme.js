@@ -61,6 +61,9 @@ const parse = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
 const toHex = rgb => '#' + rgb.map(v => Math.round(Math.min(1, Math.max(0, v)) * 255)
     .toString(16).padStart(2, '0')).join('');
 
+/** Blends two palette colours: t = 0 is a, t = 1 is b. */
+const mix = (a, b) => t => toHex(parse(a).map((v, i) => v + (parse(b)[i] - v) * t));
+
 /** A colour of the palette, printed, optionally with an alpha suffix. */
 function ink(hex, cfg) {
     return toHex(transform(parse(hex.slice(0, 7)), cfg)) + hex.slice(7);
@@ -69,8 +72,11 @@ function ink(hex, cfg) {
 function build(p, cfg) {
     const c = hex => ink(hex, cfg);
     const s = Object.fromEntries(Object.entries(p.syntax).map(([k, v]) => [k, c(v)]));
-    // The coloured paper of the title, activity and status bars.
-    const bar = c(p.bars[cfg.accentColor] ?? p.bars.beige);
+    // Coloured paper around the editor, strongest at the window's edge and
+    // fading inwards: bars, then sidebar and tabs, then popups, then a panel
+    // and terminal close to the editor's plain paper.
+    const tint = mix(p.paper, p.chrome[cfg.accentColor] ?? p.chrome.beige);
+    const deep = c(tint(1)), side = c(tint(0.6)), alt = c(tint(0.45)), near = c(tint(0.15));
 
     const colors = {
         // Base
@@ -85,35 +91,35 @@ function build(p, cfg) {
         'textSeparator.foreground': c(p.rule),
 
         // Window
-        'titleBar.activeBackground': bar, 'titleBar.activeForeground': c(p.ink),
-        'titleBar.inactiveBackground': bar, 'titleBar.inactiveForeground': c(p.inkFaint),
+        'titleBar.activeBackground': deep, 'titleBar.activeForeground': c(p.ink),
+        'titleBar.inactiveBackground': deep, 'titleBar.inactiveForeground': c(p.inkFaint),
         'titleBar.border': c(p.rule),
-        'activityBar.background': bar, 'activityBar.foreground': c(p.ink),
+        'activityBar.background': deep, 'activityBar.foreground': c(p.ink),
         'activityBar.inactiveForeground': c(p.inkFaint), 'activityBar.border': c(p.rule),
         'activityBar.activeBorder': c(p.accent), 'activityBarBadge.background': c(p.accent),
         'activityBarBadge.foreground': c(p.paper),
-        'sideBar.background': c(p.paperAlt), 'sideBar.foreground': c(p.ink), 'sideBar.border': c(p.rule),
+        'sideBar.background': side, 'sideBar.foreground': c(p.ink), 'sideBar.border': c(p.rule),
         'sideBarTitle.foreground': c(p.inkSoft),
-        'sideBarSectionHeader.background': c(p.paperAlt), 'sideBarSectionHeader.foreground': c(p.inkSoft),
+        'sideBarSectionHeader.background': side, 'sideBarSectionHeader.foreground': c(p.inkSoft),
         'sideBarSectionHeader.border': c(p.rule),
-        'statusBar.background': bar, 'statusBar.foreground': c(p.inkSoft),
+        'statusBar.background': deep, 'statusBar.foreground': c(p.inkSoft),
         'statusBar.border': c(p.rule), 'statusBar.debuggingBackground': c(p.warning),
-        'statusBar.debuggingForeground': c(p.paper), 'statusBar.noFolderBackground': bar,
+        'statusBar.debuggingForeground': c(p.paper), 'statusBar.noFolderBackground': deep,
         'statusBarItem.hoverBackground': c(p.ruleSoft), 'statusBarItem.remoteBackground': c(p.accent),
         'statusBarItem.remoteForeground': c(p.paper),
-        'panel.background': c(p.paper), 'panel.border': c(p.rule),
+        'panel.background': near, 'panel.border': c(p.rule),
         'panelTitle.activeForeground': c(p.ink), 'panelTitle.inactiveForeground': c(p.inkFaint),
         'panelTitle.activeBorder': c(p.accent),
 
         // Tabs and editor groups
-        'editorGroupHeader.tabsBackground': c(p.paperAlt), 'editorGroupHeader.tabsBorder': c(p.rule),
+        'editorGroupHeader.tabsBackground': side, 'editorGroupHeader.tabsBorder': c(p.rule),
         'editorGroup.border': c(p.rule), 'editorGroup.emptyBackground': c(p.paper),
         'tab.activeBackground': c(p.paper), 'tab.activeForeground': c(p.ink),
-        'tab.activeBorderTop': c(p.accent), 'tab.inactiveBackground': c(p.paperAlt),
+        'tab.activeBorderTop': c(p.accent), 'tab.inactiveBackground': side,
         'tab.inactiveForeground': c(p.inkFaint), 'tab.border': c(p.rule),
         'tab.hoverBackground': c(p.paper), 'tab.unfocusedActiveForeground': c(p.inkSoft),
         'breadcrumb.foreground': c(p.inkFaint), 'breadcrumb.focusForeground': c(p.ink),
-        'breadcrumb.activeSelectionForeground': c(p.ink), 'breadcrumbPicker.background': c(p.paperAlt),
+        'breadcrumb.activeSelectionForeground': c(p.ink), 'breadcrumbPicker.background': alt,
 
         // Editor
         'editor.background': c(p.paper), 'editor.foreground': c(p.ink),
@@ -142,9 +148,9 @@ function build(p, cfg) {
         'editorStickyScroll.background': c(p.paper), 'editorStickyScrollHover.background': c(p.lineHighlight),
         'editorInlayHint.foreground': c(p.inkFaint), 'editorInlayHint.background': c(p.paperAlt),
         'editorGhostText.foreground': c(p.inkFaint),
-        'editorWidget.background': c(p.paperAlt), 'editorWidget.foreground': c(p.ink),
-        'editorWidget.border': c(p.rule), 'editorHoverWidget.background': c(p.paperAlt),
-        'editorHoverWidget.border': c(p.rule), 'editorSuggestWidget.background': c(p.paperAlt),
+        'editorWidget.background': alt, 'editorWidget.foreground': c(p.ink),
+        'editorWidget.border': c(p.rule), 'editorHoverWidget.background': alt,
+        'editorHoverWidget.border': c(p.rule), 'editorSuggestWidget.background': alt,
         'editorSuggestWidget.border': c(p.rule), 'editorSuggestWidget.foreground': c(p.ink),
         'editorSuggestWidget.selectedBackground': c(p.selection),
         'editorSuggestWidget.highlightForeground': c(p.accent),
@@ -170,22 +176,22 @@ function build(p, cfg) {
         'checkbox.background': c(p.paper), 'checkbox.border': c(p.rule),
         'button.background': c(p.accent), 'button.foreground': c(p.paper),
         'button.hoverBackground': c(p.accentHover),
-        'button.secondaryBackground': c(p.paperDeep), 'button.secondaryForeground': c(p.ink),
+        'button.secondaryBackground': deep, 'button.secondaryForeground': c(p.ink),
         'button.secondaryHoverBackground': c(p.ruleSoft),
-        'badge.background': c(p.paperDeep), 'badge.foreground': c(p.ink),
+        'badge.background': deep, 'badge.foreground': c(p.ink),
         'progressBar.background': c(p.accent),
-        'menu.background': c(p.paperAlt), 'menu.foreground': c(p.ink), 'menu.border': c(p.rule),
+        'menu.background': alt, 'menu.foreground': c(p.ink), 'menu.border': c(p.rule),
         'menu.selectionBackground': c(p.selection), 'menu.selectionForeground': c(p.ink),
         'menu.separatorBackground': c(p.rule), 'menubar.selectionBackground': c(p.ruleSoft),
-        'quickInput.background': c(p.paperAlt), 'quickInput.foreground': c(p.ink),
+        'quickInput.background': alt, 'quickInput.foreground': c(p.ink),
         'quickInputList.focusBackground': c(p.selection), 'pickerGroup.foreground': c(p.accent),
-        'pickerGroup.border': c(p.rule), 'keybindingLabel.background': c(p.paperDeep),
+        'pickerGroup.border': c(p.rule), 'keybindingLabel.background': deep,
         'keybindingLabel.foreground': c(p.ink), 'keybindingLabel.border': c(p.rule),
         'keybindingLabel.bottomBorder': c(p.rule),
-        'notifications.background': c(p.paperAlt), 'notifications.foreground': c(p.ink),
-        'notifications.border': c(p.rule), 'notificationCenterHeader.background': c(p.paperDeep),
+        'notifications.background': alt, 'notifications.foreground': c(p.ink),
+        'notifications.border': c(p.rule), 'notificationCenterHeader.background': deep,
         'peekView.border': c(p.accent), 'peekViewEditor.background': c(p.paperAlt),
-        'peekViewResult.background': c(p.paperAlt), 'peekViewTitle.background': c(p.paperDeep),
+        'peekViewResult.background': alt, 'peekViewTitle.background': deep,
         'peekViewEditor.matchHighlightBackground': c(p.findMatch) + '60',
         'peekViewResult.matchHighlightBackground': c(p.findMatch) + '60',
 
@@ -193,7 +199,7 @@ function build(p, cfg) {
         'gitDecoration.addedResourceForeground': c(p.added), 'gitDecoration.modifiedResourceForeground': c(p.modified),
         'gitDecoration.deletedResourceForeground': c(p.deleted), 'gitDecoration.untrackedResourceForeground': c(p.added),
         'gitDecoration.ignoredResourceForeground': c(p.inkFaint), 'gitDecoration.conflictingResourceForeground': c(p.error),
-        'terminal.background': c(p.paper), 'terminal.foreground': c(p.ink),
+        'terminal.background': near, 'terminal.foreground': c(p.ink),
         'terminalCursor.foreground': c(p.accent), 'terminal.selectionBackground': c(p.selection),
         ...Object.fromEntries(Object.entries(p.ansi).map(([k, v]) => [`terminal.ansi${k}`, c(v)])),
     };
