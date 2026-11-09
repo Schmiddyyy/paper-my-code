@@ -2,7 +2,7 @@
   "name": "paper-my-code",
   "displayName": "Paper my Code",
   "description": "Light and dark paper themes in print colours, with an optional realistic paper texture, ink spread and light scattering over the editor.",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "publisher": "paper-my-code",
   "license": "GPL-3.0-or-later",
   "icon": "images/icon.png",
@@ -269,6 +269,24 @@
             "default": true,
             "markdownDescription": "Hide the texture while VSCodium is fullscreen (presenting, screen sharing).",
             "order": 3
+          },
+          "paperMyCode.accentColor": {
+            "type": "string",
+            "default": "beige",
+            "enum": [
+              "beige",
+              "purple",
+              "green",
+              "blue"
+            ],
+            "enumDescriptions": [
+              "Plain paper, like the rest of the window.",
+              "Lavender paper.",
+              "Sage paper.",
+              "Pale blue paper."
+            ],
+            "markdownDescription": "Colour of the title bar, activity bar and status bar. The editor, sidebar and panels stay paper-coloured.",
+            "order": 5
           },
           "paperMyCode.shiftTexture": {
             "type": "boolean",

@@ -11,6 +11,8 @@ module.exports = {
         accent: '#8b2f3c', accentHover: '#73252f',
         selection: '#e6d9b6', selectionInactive: '#eee6d2', lineHighlight: '#f4eee0',
         findMatch: '#e2b85a',
+        // Title bar, activity bar and status bar, by paperMyCode.accentColor.
+        bars: {beige: '#ece5d5', purple: '#e2d8ea', green: '#d9e4cd', blue: '#d3dfea'},
         added: '#4a7335', modified: '#9c6c1e', deleted: '#a3352d',
         error: '#a8241b', warning: '#8f5a0c', info: '#2c5785',
         syntax: {
@@ -36,6 +38,7 @@ module.exports = {
         accent: '#d98a7d', accentHover: '#e6a195',
         selection: '#3e3a31', selectionInactive: '#312e28', lineHighlight: '#24221e',
         findMatch: '#8a6a2a',
+        bars: {beige: '#151411', purple: '#211a2a', green: '#17211a', blue: '#151e2a'},
         added: '#93b06d', modified: '#d4a95c', deleted: '#df7b70',
         error: '#ec7c70', warning: '#dcaa52', info: '#93b2d8',
         syntax: {

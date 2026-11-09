@@ -22,7 +22,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
 const {Worker} = require('node:worker_threads');
-const {textFilter, inkMask} = require('./filters');
+const {textFilter, inkMask, PAPER_THEME} = require('./filters');
 
 const TILES = ['detail', 'tone', 'grain'];
 const CACHED = [...TILES, 'ink'];
@@ -109,9 +109,11 @@ function bake(tiles, cfg, version) {
     const lightLayers = ['mottle', ...TILES.map(n => `light-${n}`)];
 
     const overlay = intensity > 0 || mottle > 0;
-    const target = scope === 'editor' ? '.monaco-workbench .part.editor' : 'body';
-    const hidden = scope === 'editor' ? '.monaco-workbench.fullscreen .part.editor'
-        : 'body:has(> .monaco-workbench.fullscreen)';
+    // Only while one of the Paper themes is active, so switching to another
+    // theme takes the paper away without a reload.
+    const target = scope === 'editor' ? `${PAPER_THEME} .part.editor` : `body:has(> ${PAPER_THEME})`;
+    const hidden = scope === 'editor' ? `${PAPER_THEME}.fullscreen .part.editor`
+        : `body:has(> ${PAPER_THEME}.fullscreen)`;
     const css = `/* Paper my Code: generated, do not edit. */
 ${target}::before, ${target}::after {
     content: "";

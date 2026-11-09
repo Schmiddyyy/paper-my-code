@@ -15,6 +15,12 @@
 // the pixel with the mean of its four half-pixel neighbours: dark strokes
 // get a faint halo, light gaps between them get a little darker.
 
+// The workbench while Paper or Paper Night is active. VSCodium puts a class on
+// it made from the extension id and the theme file's path, with every
+// character outside [_a-zA-Z0-9-] turned into "-":
+// paper-my-code-paper-my-code-themes-paper(-night)-color-theme-json.
+const PAPER_THEME = '.monaco-workbench[class*="paper-my-code-paper-my-code-themes-paper"]';
+
 // Constants from Paper my Shell.
 const INK_SHARE = 0.7;
 const INK_STRENGTH = 0.9;
@@ -93,7 +99,7 @@ function textFilter({inkSpread, lightScatter, resolution, scale}, version) {
         'color-interpolation-filters="sRGB" primitiveUnits="userSpaceOnUse">' +
         f.join('') + '</filter></svg>';
     // The editor's viewport, gutter and text, not the whole scrolled content.
-    const css = `.monaco-workbench .monaco-editor .overflow-guard { filter: url(#paper-my-code-ink); }\n`;
+    const css = `${PAPER_THEME} .monaco-editor .overflow-guard { filter: url(#paper-my-code-ink); }\n`;
     return {svg, css};
 }
 
@@ -105,4 +111,4 @@ function inkMask(tile) {
     return alpha;
 }
 
-module.exports = {textFilter, inkMask};
+module.exports = {textFilter, inkMask, PAPER_THEME};

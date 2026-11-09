@@ -9,7 +9,7 @@ const {writeThemes} = require('./theme');
 const WANTED = 'paperMyCode.wanted';
 const PRINT_FONTS = "'IBM Plex Mono', 'Courier Prime', 'iA Writer Mono S', monospace";
 // Settings the colour themes are made from; the others are for the overlay.
-const THEME_KEYS = ['printColors', 'matte', 'brightness'];
+const THEME_KEYS = ['printColors', 'matte', 'brightness', 'accentColor'];
 // Strengths renamed in 0.5.0, old name to new.
 const RENAMED = {
     mottle: 'mottle.strength',
@@ -193,6 +193,7 @@ function config() {
         printColors: v('printColors.strength', 'printColors.enabled'),
         matte: v('matte.strength', 'matte.enabled'),
         brightness: c.get('brightness.enabled') ? c.get('brightness.level') : 1,
+        accentColor: c.get('accentColor'),
         inkSpread: v('inkSpread.strength', 'inkSpread.enabled'),
         lightScatter: v('lightScatter.strength', 'lightScatter.enabled'),
         scale: c.get('scale'),

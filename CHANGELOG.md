@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+- **Fix**: the paper texture, mottle and ink effects stayed when switching to another colour theme. They now show only while Paper or Paper Night is active, and go away at once without a reload. Run **Turn On Paper** once to update them.
+- **Accent colour** (`paperMyCode.accentColor`): beige, purple, green or blue paper for the title bar, activity bar and status bar.
+
 ## 0.5.0
 - **Fix**: ink spread, light scattering, mottle, print colours, matte and brightness could switch themselves off once their strength was changed, because each strength shared its name with its switch. The strengths are now `….strength` (`brightness.level`), and existing values move over on start.
 - **Toggle Ink Spread and Light Scattering**: turns both effects on the editor's text on or off in one command.

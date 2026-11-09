@@ -69,6 +69,8 @@ function ink(hex, cfg) {
 function build(p, cfg) {
     const c = hex => ink(hex, cfg);
     const s = Object.fromEntries(Object.entries(p.syntax).map(([k, v]) => [k, c(v)]));
+    // The coloured paper of the title, activity and status bars.
+    const bar = c(p.bars[cfg.accentColor] ?? p.bars.beige);
 
     const colors = {
         // Base
@@ -83,10 +85,10 @@ function build(p, cfg) {
         'textSeparator.foreground': c(p.rule),
 
         // Window
-        'titleBar.activeBackground': c(p.paperDeep), 'titleBar.activeForeground': c(p.ink),
-        'titleBar.inactiveBackground': c(p.paperDeep), 'titleBar.inactiveForeground': c(p.inkFaint),
+        'titleBar.activeBackground': bar, 'titleBar.activeForeground': c(p.ink),
+        'titleBar.inactiveBackground': bar, 'titleBar.inactiveForeground': c(p.inkFaint),
         'titleBar.border': c(p.rule),
-        'activityBar.background': c(p.paperDeep), 'activityBar.foreground': c(p.ink),
+        'activityBar.background': bar, 'activityBar.foreground': c(p.ink),
         'activityBar.inactiveForeground': c(p.inkFaint), 'activityBar.border': c(p.rule),
         'activityBar.activeBorder': c(p.accent), 'activityBarBadge.background': c(p.accent),
         'activityBarBadge.foreground': c(p.paper),
@@ -94,9 +96,9 @@ function build(p, cfg) {
         'sideBarTitle.foreground': c(p.inkSoft),
         'sideBarSectionHeader.background': c(p.paperAlt), 'sideBarSectionHeader.foreground': c(p.inkSoft),
         'sideBarSectionHeader.border': c(p.rule),
-        'statusBar.background': c(p.paperDeep), 'statusBar.foreground': c(p.inkSoft),
+        'statusBar.background': bar, 'statusBar.foreground': c(p.inkSoft),
         'statusBar.border': c(p.rule), 'statusBar.debuggingBackground': c(p.warning),
-        'statusBar.debuggingForeground': c(p.paper), 'statusBar.noFolderBackground': c(p.paperDeep),
+        'statusBar.debuggingForeground': c(p.paper), 'statusBar.noFolderBackground': bar,
         'statusBarItem.hoverBackground': c(p.ruleSoft), 'statusBarItem.remoteBackground': c(p.accent),
         'statusBarItem.remoteForeground': c(p.paper),
         'panel.background': c(p.paper), 'panel.border': c(p.rule),
@@ -276,7 +278,7 @@ function writeThemes(dir, cfg) {
     return changed;
 }
 
-const DEFAULTS = {printColors: 1, matte: 0.2, brightness: 1};
+const DEFAULTS = {printColors: 1, matte: 0.2, brightness: 1, accentColor: 'beige'};
 
 module.exports = {writeThemes, build, contrast, DEFAULTS};
 
