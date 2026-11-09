@@ -2,8 +2,8 @@
   "name": "paper-my-code",
   "displayName": "Paper my Code",
   "description": "Light and dark paper themes in print colours, with an optional realistic paper texture, ink spread and light scattering over the editor.",
-  "version": "0.6.0",
-  "publisher": "paper-my-code",
+  "version": "0.6.1",
+  "publisher": "schmiddyyy",
   "license": "GPL-3.0-or-later",
   "icon": "images/icon.png",
   "repository": {

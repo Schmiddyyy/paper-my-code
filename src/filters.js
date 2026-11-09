@@ -17,9 +17,10 @@
 
 // The workbench while Paper or Paper Night is active. VSCodium puts a class on
 // it made from the extension id and the theme file's path, with every
-// character outside [_a-zA-Z0-9-] turned into "-":
-// paper-my-code-paper-my-code-themes-paper(-night)-color-theme-json.
-const PAPER_THEME = '.monaco-workbench[class*="paper-my-code-paper-my-code-themes-paper"]';
+// character outside [_a-zA-Z0-9-] turned into "-", as in
+// schmiddyyy-paper-my-code-themes-paper-night-color-theme-json. Matched
+// without the publisher, so a change of publisher doesn't break it.
+const PAPER_THEME = '.monaco-workbench[class*="-paper-my-code-themes-paper"]';
 
 // Constants from Paper my Shell.
 const INK_SHARE = 0.7;

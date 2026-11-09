@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.1
+- **New publisher**: the extension is now `schmiddyyy.paper-my-code` (was `paper-my-code.paper-my-code`). Uninstall the old one, install this one and run **Turn On Paper** once. Settings carry over.
+
 ## 0.6.0
 - **Fix**: the paper texture, mottle and ink effects stayed when switching to another colour theme. They now show only while Paper or Paper Night is active, and go away at once without a reload. Run **Turn On Paper** once to update them.
 - **Accent colour** (`paperMyCode.accentColor`): beige, purple, green or blue paper around the editor, strongest on the outer bars and fading inwards through sidebar, tabs and popups to a panel and terminal close to paper. The editor stays plain paper.
